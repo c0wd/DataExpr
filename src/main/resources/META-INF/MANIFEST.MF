@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Build-Jdk: 17.0.5
+
