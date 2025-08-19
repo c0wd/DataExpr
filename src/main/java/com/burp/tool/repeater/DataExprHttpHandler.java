@@ -27,25 +27,23 @@ public class DataExprHttpHandler implements HttpHandler {
     public RequestToBeSentAction handleHttpRequestToBeSent(HttpRequestToBeSent httpRequestToBeSent) {
         // 只修改Repeater
         if (httpRequestToBeSent.toolSource().isFromTool(ToolType.REPEATER)) {
-
             HttpRequest modifyRequest;
             try {
-                // httpRequestToBeSent.toString方法直接可以获取到全部的HTTP报文。自己构造有\r\n问题
-                String s = BurpUtil.matchAndEvaluate(httpRequestToBeSent);
-                modifyRequest = HttpRequest.httpRequest(httpRequestToBeSent.httpService(), ByteArray.byteArray(s));
-                if (modifyRequest.hasHeader("Content-Length")) {
-                    modifyRequest = modifyRequest.withUpdatedHeader("Content-Length", String.valueOf(modifyRequest.body().length()));
+                if (BurpUtil.isMatch(httpRequestToBeSent)){
+                    // httpRequestToBeSent.toString方法直接可以获取到全部的HTTP报文。自己构造有\r\n问题
+                    String s = BurpUtil.matchAndEvaluate(httpRequestToBeSent);
+                    modifyRequest = HttpRequest.httpRequest(httpRequestToBeSent.httpService(), ByteArray.byteArray(s));
+                    if (modifyRequest.hasHeader("Content-Length")) {
+                        modifyRequest = modifyRequest.withUpdatedHeader("Content-Length", String.valueOf(modifyRequest.body().length()));
+                    }
+                    return RequestToBeSentAction.continueWith(modifyRequest);
                 }
-
-                return RequestToBeSentAction.continueWith(modifyRequest);
             } catch (Exception e) {
                 logging.logToError(e);
                 throw new RuntimeException("处理HTTP请求时发生错误: " + e.getMessage(), e);
             }
-
-        } else {
-            return RequestToBeSentAction.continueWith(httpRequestToBeSent);
         }
+        return RequestToBeSentAction.continueWith(httpRequestToBeSent);
 
     }
 
